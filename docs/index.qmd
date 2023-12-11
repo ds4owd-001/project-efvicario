@@ -1,0 +1,29 @@
+---
+title: "My project"
+author: "Elizabeth Vicario"
+format:
+  html:
+    embed-resources: true
+editor: visual
+execute:
+  warning: false
+editor_options: 
+  chunk_output_type: console
+output: html_document
+---
+
+# My project
+
+## Analysis goals
+
+With this data, I would like to compare water storage capacity, shortage coping mechanisms, and struggles with water (using multiple metrics) between communities. I would like to see if a relationship exists between water storage capacity and water struggles.
+
+## Load packages and data
+
+```{r}
+library(tidyverse)
+library(readxl)
+read_excel("data/raw/owd_ghana_water_household_survey.xlsx")
+```
+
+# 
