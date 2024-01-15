@@ -1,0 +1,30 @@
+﻿variable_name,description
+id,identification number of household
+community,one of two communities surveyed. Options: Korle Gonno (coastal neighborhood just west of city center) or Abuja (extralegal settlement just west of Makola central market and north of settlement Agbogbloshie)
+housing_type,housing type options: block_unit (unit in a single-story multi-unit complex made of cement blocks); wood_unit (unit in a single-story multi-unit complex made of wood); house (detached single-family dwelling with multiple rooms); compound_house (unit in a single-story L- or C-shaped building with a multiple units around a shared courtyard - typically owned and inhabited by family members); multistory_apt (multi-story apartment building); wood_shack (one-room dwelling made of wood); no_structure (open-air dwelling - typically at a rented outdoor market stall or house destroyed by fire); other
+gender,gender of respondent
+tenure,tenure status
+hhhead_relation,relationship to household head (self-described)
+years_in_community,number of years respondent has lived in community
+adult_count,"number of adults in household including respondent. Household is described as those ""eating from the same pot"""
+child_count,"number of children under 18 in household. Household is described as those ""eating from the same pot"""
+total_count,adult_count + child_count
+rooms_in_hh,"number of rooms used for sleeping. Household is described as those ""eating from the same pot"""
+density,total_count / rooms_in_hh
+business_owned,household or respondent owns a business
+business_type,type of business
+primary_dw_source,primary source of drinking water
+reasons_primary_dw,respondent reasons for using drinking water source
+secondary_dw_source,secondary source of drinking water
+reasons_secondary_dw,respondent reasons for using other drinking water source
+preferred_brand,category of packaged water preferred by respondent
+daily_dw_cost_pp,daily cost of drinking water for respondent
+primary_water_source,primary source of non-drinking water
+secondary_water_source,secondary source of non-drinking water
+payment_mode,payment method for households using tap water as primary or secondary source
+daily_hh_water_cost,daily cost of non-drinking water for households paying to fetch water
+daily_hh_water_cost_phm,daily cost of non-drinking water per household member for households paying to fetch water
+storage,storage capacity in liters
+days_struggle,days in a week the respondent typically struggles to find or pay for water
+coping_mechanisms,strategies for coping with water shortage. Options: sachet_to_cook (used packaged water for cooking); skipped_cooking (skipped cooking because of water shortage); sachet_to_bathe (used packaged water for bathing); skipped_bathing (skipped bathing because of water shortage); closed_business (closed business due to water shortage); skipped_laundry (skipped washing clothes because of water shortage)
+time_of_last_coping,most recent time of the last coping mechanism used by respondent. Options: last_3_days; last_7_days; last_30_days; _last_year; over_year_ago; na (does not recall ever using one of the coping mechanisms listed)
