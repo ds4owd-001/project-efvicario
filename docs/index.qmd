@@ -35,6 +35,8 @@ data <- read_excel("data/raw/r_household_survey_analysis.xlsx")
 
 # Data processing
 
+Left to do: separate out coping mechanisms (semicolon separated)
+
 Add columns to the data to represent total household size (adult + child count) and household density (household size / bedrooms).
 
 ```{r}
@@ -43,7 +45,11 @@ Add columns to the data to represent total household size (adult + child count) 
 
 processed_data <- data |> 
   mutate(hh_size = adult_count + child_count,.after=child_count)  |> 
-  mutate(density = hh_size / rooms_in_hh,.after =rooms_in_hh)
+  mutate(density = hh_size / rooms_in_hh,.after =rooms_in_hh) 
+
+processed_data <- processed_data %>% 
+  group_by(time_of_last_coping) %>% 
+  mutate(mean_storage_for_coping_time = mean(storage),.after = time_of_last_coping) 
 
 ```
 
@@ -362,6 +368,28 @@ processed_data |>
   geom_violin()
 ```
 
+Distance to nearest piped water source
+
+```{r}
+processed_data |> 
+  ggplot(mapping = aes(x=community,
+                       y = piped_point_dist_km,
+                       fill = community)) +
+  labs(title="Distance to nearest piped water source",
+       x = "Community", 
+       y = "Distance [km]") +
+       # caption="" to add a caption
+  scale_x_discrete("Community",
+                   #labels = community_labels) +
+                     labels = c("abuja" = "Abuja\nn=58", 
+                              "kg" = "Korle Gonno\nn=58")) +
+  scale_fill_manual(values = c("coral","darkslategray3")) +
+                  #  name="Community",
+                   # labels=c("Abuja","Korle Gonno"))
+  theme(legend.position = "None") +
+  geom_violin() 
+```
+
 ### Compare variables across storage capacities
 
 How does household size relate to storage? (not much)
@@ -378,7 +406,7 @@ How does household size relate to storage? (not much)
 
 How does storage relate to the number of days of struggle per week?
 
-issue - facet wrap labels
+issue - facet wrap labels continue to drive me nuts
 
 ```{r}
 community_labels <- c("abuja" = "Abuja",
@@ -404,16 +432,13 @@ How does storage relate to the last day of using a coping mechanism?
 
 Few issues with this plot, why aren't the "na" storage values showing up?
 
-how to add a trend line: with data in wide format, maybe I should manually enter the mean values as a new variable and add it to the plot
+Want to add a trendline but it's a cat variable
 
 fix facet wrap titles
 
-```{r}
-#mean_storage <- processed_data |> 
- # group_by(time_of_last_coping)  +
-  #summarize(mean_storage = mean(storage[category == "storage"])) 
-  
-processed_data |> 
+```{r, include=FALSE}
+glimpse(processed_data)
+processed_data |>
   ggplot(mapping = aes(x = time_of_last_coping,
                        y = storage,
                        color = community)) +
@@ -426,10 +451,114 @@ processed_data |>
         legend.position = "none") +
   scale_x_discrete("Time of last coping mechanism",
                    labels = time_of_coping_labels) + #controls x-axis
-#  geom_smooth(y = )
-#    method = "lm",
-#              se = FALSE) +
+#  geom_smooth(y = processed_data$mean_storage_for_coping_time,
+ #   method = "lm")+
+  
   facet_wrap("community", ncol = 2)
+
+```
+
+### Compare variables with distance to nearest piped water point
+
+fix facet wrap titles
+
+```{r}
+  
+processed_data |> 
+  ggplot(mapping = aes(x = days_struggle,
+                       y = piped_point_dist_km,
+                       color = community)) +
+  geom_point() + 
+  geom_smooth(method = lm)+
+  labs(title="Distance to nearest water point\nand frequency of struggle to find water in a week",
+       y = "Distance [km]",
+       x = "Days of struggle in a week") +
+  theme(axis.text.x = element_text(angle=65, 
+                                   vjust=0.55),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none") + #controls x-axis
+
+  facet_wrap("community", ncol = 2)
+
+```
+
+fix facet wrap titles
+
+```{r}
+  
+processed_data |> 
+  ggplot(mapping = aes(x = days_struggle,
+                       y = daily_hh_water_cost_phhm,
+                       color = community)) +
+  geom_point() + 
+  geom_smooth(method = lm)+
+  labs(title="Daily household water cost per hhm\nand frequency of struggle to find water in a week",
+       y = "Cost[GHC per hh member]",
+       x = "Days of struggle in a week") +
+  theme(axis.text.x = element_text(angle=65, 
+                                   vjust=0.55),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none") + #controls x-axis
+
+  facet_wrap("community", ncol = 2)
+
+```
+
+## Add multiple vars together: which vars are related to days of struggle?
+
+lookup multiple series scatter/trendline
+
+## Linear regression tests
+
+### Storage and...
+
+Days of struggle per week (significant at .05, negative, poor fit)
+
+```{r}
+
+lm_storage_struggle <- lm(processed_data$storage~processed_data$days_struggle) 
+plot(lm_storage_struggle)
+summary(lm_storage_struggle)
+
+lm_storage_struggle_abuja <- lm(abuja_data$storage ~ abuja_data$days_struggle)
+summary(lm_storage_struggle_abuja)
+
+lm_storage_struggle_kg <- lm(kg_data$storage ~ kg_data$days_struggle)
+summary(lm_storage_struggle_kg)
+
+```
+
+Daily water cost per hh member (significant at .001, negative, poor fit)
+
+```{r}
+
+lm_storage_phhm_cost <- lm(processed_data$storage~processed_data$daily_hh_water_cost_phhm) 
+plot(lm_storage_phhm_cost)
+summary(lm_storage_phhm_cost)
+
+lm_storage_struggle_abuja <- lm(abuja_data$storage ~ abuja_data$days_struggle)
+summary(lm_storage_struggle_abuja)
+
+lm_storage_struggle_kg <- lm(kg_data$storage ~ kg_data$days_struggle)
+summary(lm_storage_struggle_kg)
+
+```
+
+## Days of struggle and...
+
+Distance to nearest piped water source (km) (significant at 0.01, very weakly negative, poor fit)
+
+```{r}
+#all data
+lm_distance_struggle <- lm(processed_data$piped_point_dist_km ~processed_data$days_struggle) 
+#plot(lm_distance_struggle)
+summary(lm_distance_struggle)
+#Abuja data
+lm_distance_struggle_abuja <- lm(abuja_data$piped_point_dist_km ~ abuja_data$days_struggle)
+summary(lm_distance_struggle_abuja)
+#KG data
+lm_distance_struggle_kg <- lm(kg_data$piped_point_dist_km ~ kg_data$days_struggle)
+summary(lm_distance_struggle_kg)
 
 ```
 
