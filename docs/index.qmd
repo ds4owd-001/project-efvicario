@@ -9,7 +9,9 @@ execute:
   warning: false
 editor_options: 
   chunk_output_type: console
-output: html_document
+output:
+  html_document:
+    code_folding: hide
 ---
 
 # My project
@@ -30,7 +32,7 @@ library(tidyr)
 ## Read data
 
 ```{r}
-data <- read_excel("data/raw/r_household_survey_analysis.xlsx")
+data <- read_excel(here::here("data/raw/r_household_survey_analysis.xlsx"))
 ```
 
 # Data processing
@@ -53,7 +55,7 @@ processed_data <- processed_data %>%
 
 ```
 
-Convert "na" and infinite values to actual NA values, then convert some chr columns to dbl
+Convert "na" and infinite values to actual N/A values, then convert some columns of type "chr" to type "dbl." Omit the time of last coping variable in assigning N/A values because N/A in this case is meaningful.
 
 ```{r}
 
@@ -64,42 +66,17 @@ processed_data <- processed_data %>%
   mutate(preferred_brand = na_if(preferred_brand,"na")) %>% 
   mutate(secondary_water_source = na_if(secondary_water_source,"na")) %>% 
   mutate(coping_mechanisms = na_if(coping_mechanisms, "na")) %>% 
-#  mutate(time_of_last_coping = na_if(time_of_last_coping,"na")) %>% 
-#  leaving this one out because I want to label it and show it in a plot
-    mutate(business_type = na_if(business_type,"na")) %>% 
+  mutate(business_type = na_if(business_type,"na")) %>% 
   mutate(daily_hh_water_cost = na_if(daily_hh_water_cost, "na")) %>% 
   mutate(daily_hh_water_cost_phhm = na_if(daily_hh_water_cost_phhm,"na")) 
 
 processed_data$daily_hh_water_cost <- as.numeric(processed_data$daily_hh_water_cost)
 processed_data$daily_hh_water_cost_phhm <- as.numeric(processed_data$daily_hh_water_cost_phhm)
-
-
 ```
 
-I thought we needed to pivot data longer but it's actually not very helpful in this case
+Create variables with filtered data to get each category, in case I make any combined plots:
 
 ```{r}
-# tibble <- as_tibble(processed_data)
-# tibble
-# long_data <- processed_data |> 
-  # pivot_longer(cols = c(years_in_community, 
-    #                    adult_count, 
-     #                   child_count, 
-      #                  hh_size,
-       #                 rooms_in_hh, 
-        #                density,
-         #               daily_dw_cost_pp,
-          #              storage,
-           #             days_struggle),
-            #   names_to = "dbl_variable",
-             #  values_to = "value") 
-# write.csv(long_data,"long_data.csv",row.names = TRUE)
-```
-
-Create vars with filtered data to get each category, in case I make any combined plots
-
-```{r}
-
 abuja_data <- filter(.data = processed_data,
                     community=="abuja")
 kg_data <- filter(.data = processed_data,
@@ -108,7 +85,7 @@ kg_data <- filter(.data = processed_data,
 
 # Data visualization
 
-Create labels and set orders for variables to be used in plots
+Create labels and set orders for ordinal variables to be used in plots:
 
 ```{r}
 #Label housing categories
@@ -169,7 +146,7 @@ community_labels <- c("abuja" = "Abuja",
 
 ### Community comparisons: Demographics
 
-Years in community
+Years in community:
 
 ```{r}
 processed_data |> 
@@ -184,24 +161,17 @@ processed_data |>
   scale_x_discrete("Community",
                    labels = c("abuja" = "Abuja", 
                               "kg" = "Korle Gonno")) +
+              # limits = c("Abuja")) +
   scale_fill_manual(values = c("coral","darkslategray3")) +
                   #  name="Community",
                    # labels=c("Abuja","Korle Gonno"))
   theme(legend.position = "None")
-
-
-# Use limits to adjust the which levels (and in what order)
-# are displayed with scale_x_discrete
-#  + limits = c("Abuja"))
-
-#from: https://ggplot2.tidyverse.org/reference/scale_discrete.html
 ```
 
-Housing type
+Housing type:
 
 ```{r}
 
-#create plot
 processed_data %>% 
   ggplot(mapping = aes(housing_type)) +
   geom_bar(aes(fill = community)) +  
@@ -219,7 +189,7 @@ processed_data %>%
 #    facet_wrap(~community)
 ```
 
-Tenure status
+Tenure status:
 
 ```{r}
 processed_data |> 
@@ -238,7 +208,7 @@ processed_data |>
 #from: https://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Histogram
 ```
 
-Household size
+Household size:
 
 ```{r}
 processed_data |> 
@@ -274,7 +244,7 @@ processed_data |>
 
 ### Community comparisons: Water-related
 
-Daily cost of drinking water (for the respondent) - not much variation here
+Daily cost of drinking water (for the respondent)
 
 ```{r}
 processed_data |> 
@@ -311,9 +281,7 @@ processed_data |>
 
 ```
 
-daily cost of water (per household member)
-
-*need to convert these to dbl form first! Na_if function --\> change type?*
+Daily cost of water (per household member)
 
 ```{r}
 
@@ -347,11 +315,11 @@ processed_data |>
   theme(legend.position = "None",
         plot.title = element_text(hjust = 0.5)) +
   geom_violin() 
-#  geom_jitter(mapping = aes(color = community)) +
-#  geom_boxplot(mapping = aes(alpha = 0.5))
 ```
 
-days of struggle per week (could add sample sizes here, and add how many are 0)
+Days of struggle per week
+
+-   could add sample sizes here, and add how many are 0
 
 ```{r}
 processed_data |> 
@@ -392,21 +360,7 @@ processed_data |>
 
 ### Compare variables across storage capacities
 
-How does household size relate to storage? (not much)
-
-```{r}
-#processed_data |> 
-#  ggplot(mapping = aes(x = hh_size,
-#                       y = storage,
-#                       color = community)) +
-#  geom_point()
-  #geom_histogram(mapping = aes(x = housing_type))
-                               
-```
-
 How does storage relate to the number of days of struggle per week?
-
-issue - facet wrap labels continue to drive me nuts
 
 ```{r}
 community_labels <- c("abuja" = "Abuja",
@@ -421,7 +375,7 @@ processed_data |>
   theme(legend.position = "None",
         plot.title = element_text(hjust = 0.5)) +
   geom_point() + 
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm") +
   facet_wrap("community", 
              ncol = 2)
 #             labeller = label_value(community_labels)) #not working, why??
@@ -430,11 +384,11 @@ processed_data |>
 
 How does storage relate to the last day of using a coping mechanism?
 
-Few issues with this plot, why aren't the "na" storage values showing up?
+-   Few issues with this plot, why aren't the "na" storage values showing up?
 
-Want to add a trendline but it's a cat variable
+-   Want to add a trendline but it's an ordinal variable... maybe using summarize or mutate?
 
-fix facet wrap titles
+-   fix facet wrap titles
 
 ```{r, include=FALSE}
 glimpse(processed_data)
@@ -466,28 +420,6 @@ fix facet wrap titles
   
 processed_data |> 
   ggplot(mapping = aes(x = days_struggle,
-                       y = piped_point_dist_km,
-                       color = community)) +
-  geom_point() + 
-  geom_smooth(method = lm)+
-  labs(title="Distance to nearest water point\nand frequency of struggle to find water in a week",
-       y = "Distance [km]",
-       x = "Days of struggle in a week") +
-  theme(axis.text.x = element_text(angle=65, 
-                                   vjust=0.55),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "none") + #controls x-axis
-
-  facet_wrap("community", ncol = 2)
-
-```
-
-fix facet wrap titles
-
-```{r}
-  
-processed_data |> 
-  ggplot(mapping = aes(x = days_struggle,
                        y = daily_hh_water_cost_phhm,
                        color = community)) +
   geom_point() + 
@@ -504,9 +436,32 @@ processed_data |>
 
 ```
 
-## Add multiple vars together: which vars are related to days of struggle?
+## Which variables are related to days of struggle?
 
-lookup multiple series scatter/trendline
+Introduce the payment mode variable
+
+-   Put a different var on y-axis related to cost (first need to sort out the daily cost for monthly bill households)
+
+-   This is really odd, alpha is being plotted instead of actually changing transparency
+
+```{r}
+processed_data |> 
+  ggplot(mapping = aes(x=payment_mode,
+                       y = days_struggle,
+                       fill = community)) +
+  labs(title="Payment modes",
+       y = "Days struggle") +
+  scale_x_discrete("Payment mode and days struggle",
+                   labels = c("both" = "Both\n(n=?)", 
+                              "pay_to_fetch" = "Pay per bucket \n(n=???)",
+                              "shares_bill" = "Pays all or part\n of monthly bill\n(n=??)")) +  
+  theme(#legend.position = "None", I wonder how to get rid of the alpha one?
+        plot.title = element_text(hjust = 0.5)) +
+  geom_jitter(mapping = aes(color=community,
+                            alpha = .99)) +
+  geom_boxplot(mapping = aes(alpha = 0.4),
+               varwidth = TRUE)
+```
 
 ## Linear regression tests
 
@@ -514,7 +469,7 @@ lookup multiple series scatter/trendline
 
 Days of struggle per week (significant at .05, negative, poor fit)
 
-```{r}
+```{r, include=FALSE}
 
 lm_storage_struggle <- lm(processed_data$storage~processed_data$days_struggle) 
 plot(lm_storage_struggle)
@@ -530,7 +485,7 @@ summary(lm_storage_struggle_kg)
 
 Daily water cost per hh member (significant at .001, negative, poor fit)
 
-```{r}
+```{r, include=FALSE}
 
 lm_storage_phhm_cost <- lm(processed_data$storage~processed_data$daily_hh_water_cost_phhm) 
 plot(lm_storage_phhm_cost)
@@ -548,7 +503,7 @@ summary(lm_storage_struggle_kg)
 
 Distance to nearest piped water source (km) (significant at 0.01, very weakly negative, poor fit)
 
-```{r}
+```{r, include=FALSE}
 #all data
 lm_distance_struggle <- lm(processed_data$piped_point_dist_km ~processed_data$days_struggle) 
 #plot(lm_distance_struggle)
@@ -560,38 +515,4 @@ summary(lm_distance_struggle_abuja)
 lm_distance_struggle_kg <- lm(kg_data$piped_point_dist_km ~ kg_data$days_struggle)
 summary(lm_distance_struggle_kg)
 
-```
-
-## Notes
-
-Violin plot vs boxplot.
-
-<https://r-graph-gallery.com/89-box-and-scatter-plot-with-ggplot2.html>
-
-```{r, include = FALSE}
-# Boxplot basic
-data %>%
-  ggplot( aes(x=name, y=value, fill=name)) +
-    geom_boxplot() +
-    scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
-    theme_ipsum() +
-    theme(
-      legend.position="none",
-      plot.title = element_text(size=11)
-    ) +
-    ggtitle("Basic boxplot") +
-    xlab("")
-
-# Violin basic
-data %>%
-  ggplot( aes(x=name, y=value, fill=name)) +
-    geom_violin() +
-    scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
-    theme_ipsum() +
-    theme(
-      legend.position="none",
-      plot.title = element_text(size=11)
-    ) +
-    ggtitle("Violin chart") +
-    xlab("")
 ```
