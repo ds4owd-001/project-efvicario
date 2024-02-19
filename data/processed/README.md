@@ -62,7 +62,6 @@ Surveys were read orally by Author A or B (depending on respondent's preferred l
 2.  Methods for processing the data:
 
 Data processing involved:
-
     1) adding columns to the data to calculate total household population and household density
     2) setting NA values to be omitted during analysis
     3) setting value types to numeric for certain categories that were read as character-type: daily household water cost and daily household water cost per household member
@@ -86,5 +85,7 @@ None
     submission:
     
 Elizabeth Vicario, University of South Florida
+
 Betty Davidson, University of Ghana
+
 Dr. Ebenezer F. Amankwaa, University of Ghana (Supervisor)
