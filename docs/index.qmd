@@ -1,518 +1,241 @@
 ---
-title: "My project"
-author: "Elizabeth Vicario"
+title: "Household survey on water costs and coping strategies in Accra"
+author: 
+  - name: "Elizabeth Vicario"
+    orcid: 0009-0000-6081-2076
+    email: efv@usf.edu
+    affiliation: 
+      - name: University of South Florida
+        url: https://www.usf.edu/engineering/cee/
+date: today
+bibliography: Accra_water_for_r.bib
+csl: apa.csl
+editor: visual
 format:
   html:
     embed-resources: true
-editor: visual
+    toc: true
 execute:
   warning: false
 editor_options: 
   chunk_output_type: console
-output:
-  html_document:
-    code_folding: hide
 ---
 
-# My project
+# Introduction
 
-## Analysis goals
+In Accra, Ghana, those without household taps often rely on local water vendors, whose per-liter prices are typically 8–10 times higher than the national utility [@braimah_poverty_2018; @amankwaa_accras_2014]. Rationing is needed because the city's demand outstrips the available regional supply [@alba_featuring_2018], and longer-lasting tap closures create acute shortages in neighborhoods with low storage capacity. Residents of low-income neighborhoods and informal settlements must use social networks and coping mechanisms to purchase the water they need [@amankwaa_poverty_2016], often paying extreme prices or using expensive packaged drinking water to cook, bathe, and keep businesses open. This household survey was conducted to estimate water costs, payment mechanisms, and identify coping mechanisms in two low-income communities in Accra.
 
-With this data, I would like to compare water storage capacity, water shortage coping mechanisms, and struggles with water (using multiple metrics) between communities. I would like to see if a relationship exists between water storage capacity and water struggles.
+# Methods
 
-## Load packages and data
+A survey of 116 households was conducted in two low-income communities in metropolitan Accra. These are Korle Gonno, a larger, well-planned coastal area with over 35 household water vendors, and Abuja, a small, densely packed, extralegal settlement with 15 water vendor and bathhouse businesses. Households were identified using geographically stratified random sampling; Korle Gonno was split into four quadrants and Abuja was bisected using major roads for demarcation. Respondents were household members who claimed to be knowledgeable about household water collection practices. "Household" in this survey was defined as a group of people who live in the same housing unit and usually have meals together, or "eat from the same pot." Information about primary drinking water sources and reasoning was collected as well, but is not analyzed here.
+
+Packages were loaded and data was read from Excel format:
 
 ```{r}
+#Load packages and data
 library(tidyverse)
 library(dplyr)
 library(readxl)
 library(tidyr)
+library(scales)
+library(knitr)
+library(kableExtra)
 ```
 
-## Read data
-
 ```{r}
-data <- read_excel(here::here("data/raw/r_household_survey_analysis.xlsx"))
+#Read data
+data <- read_excel(here::here("data/raw/hh-data.xlsx"))
 ```
 
-# Data processing
+Data processing involved:
 
-Left to do: separate out coping mechanisms (semicolon separated)
+1\) adding columns to the data to calculate total household population and household density
 
-Add columns to the data to represent total household size (adult + child count) and household density (household size / bedrooms).
+2\) setting NA values to be omitted during analysis
+
+3\) setting value types
+
+4\) pivoting to long-format data for side-by-side comparisons of multiple values (community & coping mechanisms)
+
+5\) setting orders for ordinal variables used in data visualization
 
 ```{r}
-
-# Add variables I will need
-
+# Add variables related to household density
 processed_data <- data |> 
-  mutate(hh_size = adult_count + child_count,.after=child_count)  |> 
-  mutate(density = hh_size / rooms_in_hh,.after =rooms_in_hh) 
+  mutate(hh_size = adult_count + child_count,.after = child_count)  |>
+  mutate(rooms_in_hh = na_if(rooms_in_hh,0)) |> 
+  mutate(density = hh_size / rooms_in_hh,.after = rooms_in_hh)
 
-processed_data <- processed_data %>% 
-  group_by(time_of_last_coping) %>% 
-  mutate(mean_storage_for_coping_time = mean(storage),.after = time_of_last_coping) 
-
-```
-
-Convert "na" and infinite values to actual N/A values, then convert some columns of type "chr" to type "dbl." Omit the time of last coping variable in assigning N/A values because N/A in this case is meaningful.
-
-```{r}
-
-processed_data <- processed_data %>%
-  mutate(density = na_if(density,Inf)) %>% 
-  mutate(secondary_dw_source = na_if(secondary_dw_source,"na")) %>% 
-  mutate(reasons_secondary_dw = na_if(reasons_secondary_dw,"na")) %>% 
-  mutate(preferred_brand = na_if(preferred_brand,"na")) %>% 
+# Set NA values
+processed_data <- processed_data |>
+  mutate(density = na_if(density,Inf)) |> 
   mutate(secondary_water_source = na_if(secondary_water_source,"na")) %>% 
-  mutate(coping_mechanisms = na_if(coping_mechanisms, "na")) %>% 
-  mutate(business_type = na_if(business_type,"na")) %>% 
   mutate(daily_hh_water_cost = na_if(daily_hh_water_cost, "na")) %>% 
   mutate(daily_hh_water_cost_phhm = na_if(daily_hh_water_cost_phhm,"na")) 
 
+processed_data$time_of_last_struggle[processed_data$time_of_last_struggle == "na"] <- "have_not_struggled"
+
+#Read costs as numerical data
 processed_data$daily_hh_water_cost <- as.numeric(processed_data$daily_hh_water_cost)
 processed_data$daily_hh_water_cost_phhm <- as.numeric(processed_data$daily_hh_water_cost_phhm)
+
+# Pivot long
+struggle_data <- processed_data %>% 
+  filter(time_of_last_struggle == "last_3_days" |
+           time_of_last_struggle == "last_7_days" |
+           time_of_last_struggle ==  "last_30_days") 
+
+long_struggle_data <- pivot_longer(struggle_data, 
+                                   cols = sachet_to_cook:skipped_laundry)
+long_struggle_data <- filter(.data = long_struggle_data, value == 1)
+
+# Set orders for ordinal variables
+processed_data$community <- factor(processed_data$community, 
+                                   levels = c("kg","abuja"))
+long_struggle_data$name <- factor(long_struggle_data$name,
+                           levels = rev(c("sachet_to_bathe", 
+                                          "skipped_bathing",
+                                          "sachet_to_cook",
+                                          "skipped_cooking",
+                                          "skipped_laundry",
+                                          "closed_business")))
+long_struggle_data$community <- factor(long_struggle_data$community, 
+                                       levels = c("kg", "abuja"))
 ```
 
-Create variables with filtered data to get each category, in case I make any combined plots:
+Additionally, label vectors were created for ordinal variables to be used in plots:
 
 ```{r}
-abuja_data <- filter(.data = processed_data,
-                    community=="abuja")
-kg_data <- filter(.data = processed_data,
-                  community == "kg")
+coping_mech_labs <- c( "closed_business" = "Closed business",
+                       "sachet_to_bathe" = "Used sachet water\n for bathing",
+                       "sachet_to_cook" = "Used sachet water\nfor cooking",
+                       "skipped_bathing" = "Skipped bathing",
+                       "skipped_cooking" = "Skipped cooking",
+                       "skipped_laundry" = "Skipped laundry")
+community_labels <- c("kg" = "Korle Gonno",
+                      "abuja" = "Abuja")
 ```
 
-# Data visualization
+# Results
 
-Create labels and set orders for ordinal variables to be used in plots:
+See @tbl-respondents for a summary of information about the respondents.
 
 ```{r}
-#Label housing categories
-housing_labels <- c("block_unit" = "Unit in concrete\nblock building",
-                              "wood_unit" = "Unit in wood\n building",
-                              "multistory_apt" = "Unit in multi-story\napt bldg",
-                              "compound_house" = "Compound house",
-                              "house" = "Single-family house",
-                              "wood_shack" = "Wood one-room\nstructure",
-                              "other" = "Other dwelling",
-                              "no_structure" = "No structure\n/outdoors")
+#| tbl-cap: Respondent information
+#| label: tbl-respondents
 
-
-#Set order of housing type categories
-processed_data$housing_type <- factor(processed_data$housing_type, 
-                                    levels = c("block_unit",
-                                                "wood_unit",
-                                                "multistory_apt",
-                                                "compound_house",
-                                                "house",
-                                                "wood_shack",
-                                                "other",
-                                                "no_structure"))
-
-#label tenure status options
-tenure_labels <- c("no_payment" = "Living without \n payment",
-                              "owned" = "Owner",
-                              "rented" = "Paying tenant")
-
-#Set order of tenure status
-processed_data$tenure <- factor(processed_data$tenure,
-                              levels = c("owned",
-                                         "rented",
-                                         "no_payment"))
-
-#labels for time of last coping
-time_of_coping_labels <- c("last_3_days" = "In the last three days",
-                                        "last_7_days" = "In the last week",
-                                        "last_30_days" = "In the last month",
-                                         "last_year" = "In the last year",
-                                         "over_year_ago" = "Over a year ago",
-                                         "na" = "Never/cannot remember")
-
-#orders of time of last coping
-processed_data$time_of_last_coping <- factor(processed_data$time_of_last_coping,
-                                             levels = c("last_3_days",
-                                                        "last_7_days",
-                                                        "last_30_days",
-                                                        "last_year",
-                                                        "over_year_ago",
-                                                        "na"))
-
-#communities
-community_labels <- c("abuja" = "Abuja",
-                      "kg" = "Korle Gonno")
-
+summary_data <- processed_data %>% 
+  mutate(community = factor(community, labels = community_labels)) %>%
+  group_by(community) %>% 
+  summarise(num = n(),
+            years = round(mean(years_in_community), digits = 2),
+            hh = round(mean(hh_size), digits = 2),
+            mean_density = round(mean(density, na.rm = TRUE), digits = 2))
+  
+kable(summary_data, format = "html", col.names = c("Community",
+                                                  "n",
+                                                  "Years living in community",
+                                                  "Household size",
+                                                  "Persons per bedroom"),
+      align = "c") 
 ```
 
-### Community comparisons: Demographics
+Households in Korle Gonno were well-established compared to the somewhat transient, extralegal settlement of Abuja. Many Korle Gonno respondents had lived in the same family-owned compound houses for decades. These large houses have more bedrooms per unit, lowering the population density (persons per bedroom).
 
-Years in community:
+See @tbl-summary for information about respondents' primary water sources, typical daily water cost per household member, and how they pay for water (either by pre-paying for each bucket, or by sharing a monthly bill with other households).
 
 ```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = years_in_community,
-                       fill = community)) +
-  geom_boxplot(varwidth=TRUE,alpha=0.9) +
-  labs(title="Years in community",
-       x = "Community", 
-       y = "Years in community") +
-       # caption="" to add a caption
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +
-              # limits = c("Abuja")) +
-  scale_fill_manual(values = c("coral","darkslategray3")) +
-                  #  name="Community",
-                   # labels=c("Abuja","Korle Gonno"))
-  theme(legend.position = "None")
+#| tbl-cap: Summary of findings
+#| label: tbl-summary
+
+summary_data <- processed_data %>% 
+  mutate(community = factor(community, labels = community_labels)) %>%
+  group_by(community) %>% 
+  summarise(num = n(),
+            source_ct = percent(sum(primary_water_source == "commercial_tap")/num),
+            source_hh = percent(sum(primary_water_source == "piped_to_compound",
+                                    primary_water_source == "piped_to_home")/num),
+            mean_cost = round(mean(daily_hh_water_cost_phhm, na.rm = TRUE), digits = 2),
+            pay_fetch = percent(sum(payment_mode=="pay_to_fetch")/num),
+            pay_bill = percent(sum(payment_mode=="shares_bill")/num))
+            
+kable(summary_data, format = "html",col.names = c("Community", 
+                                                  "n",
+                                                  "Commercial tap users (%)", 
+                                                  "On-premises tap users (%)",
+                                                  "Daily cost per person (GHC)",
+                                                  "Pre-paying households",
+                                                  "Bill-paying households"),
+      align = "c") %>% 
+  footnote(general = "1 USD ≈ 12.5 GHC", footnote_as_chunk = T)
 ```
 
-Housing type:
+The median daily cost for Abuja residents is about 4 cedis per person (approximately 0.32 USD), amounting to about 20 cedis (1.60 USD) for a typical household of five. (For reference, a 500 mL bottle of drinking water costed 3 cedis at the time of writing.)
+
+Most (79%) of the surveyed households reported that they pre-pay for each bucket or gallon of water they collect, instead of fully paying or contributing to a monthly bill. For these households, prices are left up to informal vendors (see @fig-daily-expenses).
 
 ```{r}
-
-processed_data %>% 
-  ggplot(mapping = aes(housing_type)) +
-  geom_bar(aes(fill = community)) +  
-  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
-  labs(title="Housing type across communities",
-       x = "Housing type", 
-       y = "Count") +
-  scale_x_discrete("Community",
-                   labels = housing_labels
-                   ) + #controls x-axis
-  scale_fill_manual(values = c("coral","darkslategray3"),
-                    name="Community",
-                    labels=c("Abuja","Korle Gonno")) #controls legend
-    
-#    facet_wrap(~community)
-```
-
-Tenure status:
-
-```{r}
-processed_data |> 
-  ggplot(mapping=aes(tenure)) +
-  geom_bar(aes(fill=community), width = 0.5) + 
-  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
-  labs(title="Tenure status across communities",
-       x = "Tenure status",
-       y = "Count") + 
-  scale_x_discrete("Community",
-                   labels = tenure_labels) + #controls x-axis
-  scale_fill_manual(values = c("coral","darkslategray3"),
-                    name="Community",
-                    labels=c("Abuja","Korle Gonno")) #controls legend
-
-#from: https://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Histogram
-```
-
-Household size:
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = hh_size,
-                       fill = community)) +
-  labs(title="Household size across communities",
-       y = "Household size") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None") +
-  geom_jitter(mapping = aes(color = community)) +
-  geom_boxplot(mapping = aes(alpha = 0.5))
-```
-
-Household density
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = density,
-                       fill = community)) +
-  labs(title="Household density across communities",
-       y = "Household density (persons per bedroom)") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None") +
-  geom_jitter(mapping = aes(color = community)) +
-  geom_boxplot(mapping = aes(alpha = 0.5))
-```
-
-### Community comparisons: Water-related
-
-Daily cost of drinking water (for the respondent)
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = daily_dw_cost_pp,
-                       fill = community)) +
-  labs(title="Drinking water expense across communities",
-       y = "Daily drinking water cost") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None") +
-  geom_jitter(mapping = aes(color = community)) +
-  geom_boxplot(mapping = aes(alpha = 0.5))
-```
-
-Daily cost of non-drinking water (per household)
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = daily_hh_water_cost,
-                       fill = community)) +
-  labs(title="Daily household water expense across communities",
-       y = "Daily water cost per household [Gh Cedis]") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None") +
-  #geom_violin()
-  geom_jitter(mapping = aes(color = community)) +
-  geom_boxplot(mapping = aes(alpha = 0.5))
-
-
-```
-
-Daily cost of water (per household member)
-
-```{r}
+#| fig-cap: Daily water expense per household member, for households that pre-pay (n=90)
+#| label: fig-daily-expenses
 
 processed_data |> 
-  ggplot(mapping = aes(x=community,
+  filter(payment_mode != "shares_bill") %>% 
+  ggplot(mapping = aes(x=fct_rev(community),
                        y = daily_hh_water_cost_phhm,
                        fill = community)) +
-  labs(title="Drinking water expense (per hh member)\nacross communities",
-       y = "Daily water cost per household member [Gh Cedis]") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
+  labs(title="Daily water expense per household member",
+       y = "Cost (GHC)") +
+  scale_y_continuous(limits = c(0,15),
+                     breaks = c(0,5,10,15),
+                     minor_breaks = pretty_breaks(15)) +
+  scale_x_discrete("Community", 
+                   labels = c("abuja" = "Abuja\n(n = 50)", 
+                              "kg" = "Korle Gonno\n(n = 40)")) +  
+  scale_fill_manual(values = c("darkturquoise","coral")) +
   theme(legend.position = "None",
-        plot.title = element_text(hjust = 0.5)) +
-  geom_jitter(mapping = aes(color = community)) +
-  geom_boxplot(mapping = aes(alpha = 0.5))
-```
-
-Storage
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = storage,
-                       fill = community)) +
-  labs(title="Household water storage capacity\nacross communities",
-       y = "Water storage capacity [liters]") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None",
-        plot.title = element_text(hjust = 0.5)) +
-  geom_violin() 
-```
-
-Days of struggle per week
-
--   could add sample sizes here, and add how many are 0
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = days_struggle,
-                       fill = community)) +
-  labs(title="Typical number of weekdays a household struggles\nto find water",
-       y = "Typical days of struggle (out of 7)") +
-  scale_x_discrete("Community",
-                   labels = c("abuja" = "Abuja", 
-                              "kg" = "Korle Gonno")) +  
-  theme(legend.position = "None",
-        plot.title = element_text(hjust = 0.5)) +
-  geom_violin()
-```
-
-Distance to nearest piped water source
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=community,
-                       y = piped_point_dist_km,
-                       fill = community)) +
-  labs(title="Distance to nearest piped water source",
-       x = "Community", 
-       y = "Distance [km]") +
-       # caption="" to add a caption
-  scale_x_discrete("Community",
-                   #labels = community_labels) +
-                     labels = c("abuja" = "Abuja\nn=58", 
-                              "kg" = "Korle Gonno\nn=58")) +
-  scale_fill_manual(values = c("coral","darkslategray3")) +
-                  #  name="Community",
-                   # labels=c("Abuja","Korle Gonno"))
-  theme(legend.position = "None") +
-  geom_violin() 
-```
-
-### Compare variables across storage capacities
-
-How does storage relate to the number of days of struggle per week?
-
-```{r}
-community_labels <- c("abuja" = "Abuja",
-                      "kg" = "Korle Gonno")
-processed_data |> 
-  ggplot(mapping = aes(x = storage,
-                       y = days_struggle,
-                       color = community)) +
-  labs(title="Typical number of weekdays a household struggles\nto find water, compared to storage capacity",
-       x = "Storage capacity [liters]",
-       y = "Typical days of struggle (out of 7)") +  
-  theme(legend.position = "None",
-        plot.title = element_text(hjust = 0.5)) +
-  geom_point() + 
-  geom_smooth(method = "lm") +
-  facet_wrap("community", 
-             ncol = 2)
-#             labeller = label_value(community_labels)) #not working, why??
-
-```
-
-How does storage relate to the last day of using a coping mechanism?
-
--   Few issues with this plot, why aren't the "na" storage values showing up?
-
--   Want to add a trendline but it's an ordinal variable... maybe using summarize or mutate?
-
--   fix facet wrap titles
-
-```{r, include=FALSE}
-glimpse(processed_data)
-processed_data |>
-  ggplot(mapping = aes(x = time_of_last_coping,
-                       y = storage,
-                       color = community)) +
-  geom_point() + 
-  labs(title="Household water storage capacity\nand time of last coping strategy",
-       y = "Water storage capacity [liters]") +
-  theme(axis.text.x = element_text(angle=65, 
-                                   vjust=0.55),
         plot.title = element_text(hjust = 0.5),
-        legend.position = "none") +
-  scale_x_discrete("Time of last coping mechanism",
-                   labels = time_of_coping_labels) + #controls x-axis
-#  geom_smooth(y = processed_data$mean_storage_for_coping_time,
- #   method = "lm")+
-  
-  facet_wrap("community", ncol = 2)
-
+        axis.text.x = element_text(size = 10.5),
+        axis.text.y = element_text(size = 10.5))+
+  geom_violin(alpha = 0.4) +
+  geom_boxplot(width=0.20)
 ```
 
-### Compare variables with distance to nearest piped water point
+@fig-coping-mechs shows the variety of coping mechanisms respondents had used in the previous 30 days.
 
-fix facet wrap titles
+```{r fig.align='center'}
+#| fig-cap: Types of coping mechanisms used by respondents in the last 30 days.
+#| label: fig-coping-mechs
 
-```{r}
-  
-processed_data |> 
-  ggplot(mapping = aes(x = days_struggle,
-                       y = daily_hh_water_cost_phhm,
-                       color = community)) +
-  geom_point() + 
-  geom_smooth(method = lm)+
-  labs(title="Daily household water cost per hhm\nand frequency of struggle to find water in a week",
-       y = "Cost[GHC per hh member]",
-       x = "Days of struggle in a week") +
-  theme(axis.text.x = element_text(angle=65, 
-                                   vjust=0.55),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "none") + #controls x-axis
-
-  facet_wrap("community", ncol = 2)
-
-```
-
-## Which variables are related to days of struggle?
-
-Introduce the payment mode variable
-
--   Put a different var on y-axis related to cost (first need to sort out the daily cost for monthly bill households)
-
--   This is really odd, alpha is being plotted instead of actually changing transparency
-
-```{r}
-processed_data |> 
-  ggplot(mapping = aes(x=payment_mode,
-                       y = days_struggle,
+long_struggle_data %>% 
+  ggplot(mapping = aes(y=name,
                        fill = community)) +
-  labs(title="Payment modes",
-       y = "Days struggle") +
-  scale_x_discrete("Payment mode and days struggle",
-                   labels = c("both" = "Both\n(n=?)", 
-                              "pay_to_fetch" = "Pay per bucket \n(n=???)",
-                              "shares_bill" = "Pays all or part\n of monthly bill\n(n=??)")) +  
-  theme(#legend.position = "None", I wonder how to get rid of the alpha one?
-        plot.title = element_text(hjust = 0.5)) +
-  geom_jitter(mapping = aes(color=community,
-                            alpha = .99)) +
-  geom_boxplot(mapping = aes(alpha = 0.4),
-               varwidth = TRUE)
+  labs(title = "Coping mechanisms used in the last 30 days",
+       y = "Type of coping mechanism",
+       x = "Count of respondents") +
+  scale_y_discrete("Type of coping mechanism",
+                 labels = coping_mech_labs) +
+  scale_x_continuous(minor_breaks = pretty_breaks(25))+
+  scale_fill_manual(values = c("coral","darkturquoise"),
+                    name="Community: ",
+                    labels=c("abuja" = "Abuja (n=56)",
+                            "kg" = "Korle Gonno (n=60)"),
+                    breaks = c("abuja", "kg")) +
+  theme(axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, vjust = 1),
+        axis.title.y = element_text(size= 12, vjust = 5),
+        axis.title.x = element_text(vjust=.25),
+        plot.margin = margin(t=12,r=16,b=12,l=16),
+        legend.position = "bottom",
+        legend.text = element_text(size =10)) +
+  geom_bar(position = position_dodge(.7), width = 0.6) 
 ```
 
-## Linear regression tests
+Skipping laundry was the most common way to cope with water shortages. Six respondents had closed their business in the last 30 days due to water shortage. Frequencies were about even between the two communities, but residents of Korle Gonno had used fewer coping strategies overall.
 
-### Storage and...
+# Conclusions
 
-Days of struggle per week (significant at .05, negative, poor fit)
+-   Abuja residents are heavily reliant on commercial vendors, while a majority of Korle Gonno residents have access to a tap on-premises (inside the home or on the compound)
 
-```{r, include=FALSE}
+-   Abuja has an association of water vendors who agree on pricing strategies, and median prices are higher than Korle Gonno, where free market rules
 
-lm_storage_struggle <- lm(processed_data$storage~processed_data$days_struggle) 
-plot(lm_storage_struggle)
-summary(lm_storage_struggle)
-
-lm_storage_struggle_abuja <- lm(abuja_data$storage ~ abuja_data$days_struggle)
-summary(lm_storage_struggle_abuja)
-
-lm_storage_struggle_kg <- lm(kg_data$storage ~ kg_data$days_struggle)
-summary(lm_storage_struggle_kg)
-
-```
-
-Daily water cost per hh member (significant at .001, negative, poor fit)
-
-```{r, include=FALSE}
-
-lm_storage_phhm_cost <- lm(processed_data$storage~processed_data$daily_hh_water_cost_phhm) 
-plot(lm_storage_phhm_cost)
-summary(lm_storage_phhm_cost)
-
-lm_storage_struggle_abuja <- lm(abuja_data$storage ~ abuja_data$days_struggle)
-summary(lm_storage_struggle_abuja)
-
-lm_storage_struggle_kg <- lm(kg_data$storage ~ kg_data$days_struggle)
-summary(lm_storage_struggle_kg)
-
-```
-
-## Days of struggle and...
-
-Distance to nearest piped water source (km) (significant at 0.01, very weakly negative, poor fit)
-
-```{r, include=FALSE}
-#all data
-lm_distance_struggle <- lm(processed_data$piped_point_dist_km ~processed_data$days_struggle) 
-#plot(lm_distance_struggle)
-summary(lm_distance_struggle)
-#Abuja data
-lm_distance_struggle_abuja <- lm(abuja_data$piped_point_dist_km ~ abuja_data$days_struggle)
-summary(lm_distance_struggle_abuja)
-#KG data
-lm_distance_struggle_kg <- lm(kg_data$piped_point_dist_km ~ kg_data$days_struggle)
-summary(lm_distance_struggle_kg)
-
-```
+-   Results indicate similar coping strategies between communities, but Abuja residents are more reliant on pre-pay water vendor services and the prices of those services are higher
