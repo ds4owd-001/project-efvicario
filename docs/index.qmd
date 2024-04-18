@@ -5,7 +5,7 @@ author:
     orcid: 0009-0000-6081-2076
     email: efv@usf.edu
     affiliation: 
-      - name: University of South Florida
+      - name: University of South Florida Department of Civil and Environmental Engineering
         url: https://www.usf.edu/engineering/cee/
 date: today
 bibliography: Accra_water_for_r.bib
@@ -29,7 +29,19 @@ In Accra, Ghana, those without household taps often rely on local water vendors,
 
 A survey of 116 households was conducted in two low-income communities in metropolitan Accra. These are Korle Gonno, a larger, well-planned coastal area with over 35 household water vendors, and Abuja, a small, densely packed, extralegal settlement with 15 water vendor and bathhouse businesses. Households were identified using geographically stratified random sampling; Korle Gonno was split into four quadrants and Abuja was bisected using major roads for demarcation. Respondents were household members who claimed to be knowledgeable about household water collection practices. "Household" in this survey was defined as a group of people who live in the same housing unit and usually have meals together, or "eat from the same pot." Information about primary drinking water sources and reasoning was collected as well, but is not analyzed here.
 
-Packages were loaded and data was read from Excel format:
+Install packages:
+
+```{r,eval=FALSE}
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("readxl")
+install.packages("tidyr")
+install.packages("scales")
+install.packages("knitr")
+install.packages("kableExtra")
+```
+
+Load packages:
 
 ```{r}
 #Load packages and data
@@ -41,6 +53,8 @@ library(scales)
 library(knitr)
 library(kableExtra)
 ```
+
+Read data from Excel format:
 
 ```{r}
 #Read data
@@ -86,19 +100,19 @@ struggle_data <- processed_data %>%
            time_of_last_struggle ==  "last_30_days") 
 
 long_struggle_data <- pivot_longer(struggle_data, 
-                                   cols = sachet_to_cook:skipped_laundry)
+                                   cols = coping_sachet_to_cook:coping_skipped_laundry)
 long_struggle_data <- filter(.data = long_struggle_data, value == 1)
 
 # Set orders for ordinal variables
 processed_data$community <- factor(processed_data$community, 
                                    levels = c("kg","abuja"))
 long_struggle_data$name <- factor(long_struggle_data$name,
-                           levels = rev(c("sachet_to_bathe", 
-                                          "skipped_bathing",
-                                          "sachet_to_cook",
-                                          "skipped_cooking",
-                                          "skipped_laundry",
-                                          "closed_business")))
+                           levels = rev(c("coping_sachet_to_bathe", 
+                                          "coping_skipped_bathing",
+                                          "coping_sachet_to_cook",
+                                          "coping_skipped_cooking",
+                                          "coping_skipped_laundry",
+                                          "coping_closed_business")))
 long_struggle_data$community <- factor(long_struggle_data$community, 
                                        levels = c("kg", "abuja"))
 ```
@@ -106,12 +120,12 @@ long_struggle_data$community <- factor(long_struggle_data$community,
 Additionally, label vectors were created for ordinal variables to be used in plots:
 
 ```{r}
-coping_mech_labs <- c( "closed_business" = "Closed business",
-                       "sachet_to_bathe" = "Used sachet water\n for bathing",
-                       "sachet_to_cook" = "Used sachet water\nfor cooking",
-                       "skipped_bathing" = "Skipped bathing",
-                       "skipped_cooking" = "Skipped cooking",
-                       "skipped_laundry" = "Skipped laundry")
+coping_mech_labs <- c( "coping_closed_business" = "Closed business",
+                       "coping_sachet_to_bathe" = "Used sachet water\n for bathing",
+                       "coping_sachet_to_cook" = "Used sachet water\nfor cooking",
+                       "coping_skipped_bathing" = "Skipped bathing",
+                       "coping_skipped_cooking" = "Skipped cooking",
+                       "coping_skipped_laundry" = "Skipped laundry")
 community_labels <- c("kg" = "Korle Gonno",
                       "abuja" = "Abuja")
 ```
@@ -142,7 +156,7 @@ kable(summary_data, format = "html", col.names = c("Community",
 
 Households in Korle Gonno were well-established compared to the somewhat transient, extralegal settlement of Abuja. Many Korle Gonno respondents had lived in the same family-owned compound houses for decades. These large houses have more bedrooms per unit, lowering the population density (persons per bedroom).
 
-See @tbl-summary for information about respondents' primary water sources, typical daily water cost per household member, and how they pay for water (either by pre-paying for each bucket, or by sharing a monthly bill with other households).
+See @tbl-summary for information about respondents' primary water sources, typical daily water cost per household member, and how they pay for water from their primary water source (either by pre-paying for each bucket, or by sharing a monthly bill with other households).
 
 ```{r}
 #| tbl-cap: Summary of findings
@@ -156,8 +170,8 @@ summary_data <- processed_data %>%
             source_hh = percent(sum(primary_water_source == "piped_to_compound",
                                     primary_water_source == "piped_to_home")/num),
             mean_cost = round(mean(daily_hh_water_cost_phhm, na.rm = TRUE), digits = 2),
-            pay_fetch = percent(sum(payment_mode=="pay_to_fetch")/num),
-            pay_bill = percent(sum(payment_mode=="shares_bill")/num))
+            pay_fetch = percent(sum(payment_mode_primary=="pay_to_fetch")/num),
+            pay_bill = percent(sum(payment_mode_primary=="shares_bill")/num))
             
 kable(summary_data, format = "html",col.names = c("Community", 
                                                   "n",
@@ -170,16 +184,16 @@ kable(summary_data, format = "html",col.names = c("Community",
   footnote(general = "1 USD ≈ 12.5 GHC", footnote_as_chunk = T)
 ```
 
-The median daily cost for Abuja residents is about 4 cedis per person (approximately 0.32 USD), amounting to about 20 cedis (1.60 USD) for a typical household of five. (For reference, a 500 mL bottle of drinking water costed 3 cedis at the time of writing.)
+The median daily cost for Abuja residents is about 4 cedis per person (approximately 0.32 USD), amounting to about 20 cedis (1.60 USD) for a typical household of five. (For reference, a 500 mL bottle of drinking water costed 3 cedis and a 500 mL sachet costed 0.3-0.5 cedis at the time of writing.)
 
-Most (79%) of the surveyed households reported that they pre-pay for each bucket or gallon of water they collect, instead of fully paying or contributing to a monthly bill. For these households, prices are left up to informal vendors (see @fig-daily-expenses).
+Most (74%) of the surveyed households reported that they pre-pay for each bucket or gallon of water they collect from their primary source, instead of fully paying or contributing to a monthly bill. For these households, prices are left up to informal vendors, and are generally much higher than the utility's price. Even among pre-paying households, Abuja residents pay higher prices overall, even though their daily usage is comparable to Korle Gonno residents (see @fig-daily-expenses).
 
 ```{r}
 #| fig-cap: Daily water expense per household member, for households that pre-pay (n=90)
 #| label: fig-daily-expenses
 
 processed_data |> 
-  filter(payment_mode != "shares_bill") %>% 
+  filter(payment_mode_primary != "shares_bill") %>% 
   ggplot(mapping = aes(x=fct_rev(community),
                        y = daily_hh_water_cost_phhm,
                        fill = community)) +

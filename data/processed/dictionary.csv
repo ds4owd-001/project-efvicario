@@ -1,42 +1,23 @@
-﻿variable_name,description,,,,,
-id,identification number,,,,,
-draft_date,date and time of survey conception,,,,,
-community,case study area (Abuja or Korle Gonno),,,,,
-housing_type,housing type options: block unit (unit in a single-story multi-unit cement block complex); wood unit (unit in a single-story multi-unit wooden complex); house (detached single-family dwelling with multiple rooms); compound house (multi-unit block complex with a shared courtyard); multistory apt (multi-story apartment building); wood shack (one-room wood structure); no structure (dwelling without 4 walls or roof); other,,,,,
-gender,self-identified gender of respondent,,,,,
-tenure,"renter, owner, or other living situation without payment",,,,,
-years_in_community,years respondent has lived in community (self-reported),,,,,
-adult_count,number of current household residents at least 18 years of age,,,,,
-child_count,number of current household residents under 18 years of age,,,,,
-rooms_in_hh,rooms in household that are used for sleeping,,,,,
-primary_dw_source,"primary source of drinking water (packaged sachet or bottled water, piped water from compound, piped water from commercial tap, etc)",,,,,
-dw_reason_convenience,"respondent selected as a reason for their primary drinking water source: convenience (Yes = 1, No = 0)",,,,,
-dw_reason_affordable,"respondent selected as a reason for their primary drinking water source: affordability (Yes = 1, No = 0)",,,,,
-dw_reason_available,"respondent selected as a reason for their primary drinking water source: availability - as related to whether vendors have it available for purchase. (Yes = 1, No = 0)",,,,,
-dw_reason_cold,"respondent selected as a reason for their primary drinking water source: cold temperature (Yes = 1, No = 0)",,,,,
-dw_reason_clean,"respondent selected as a reason for their primary drinking water source: cleanliness - as related to visibly high quality of water. (Yes = 1, No = 0)",,,,,
-dw_reason_taste,"respondent selected as a reason for their primary drinking water source: taste (Yes = 1, No = 0)",,,,,
-dw_reason_habit,"respondent selected as a reason for their primary drinking water source: habit or cultural norm. The authors note that these may be different but respondents often described a gray area between habit (""I have done it all my life"") and cultural norm (""everyone does it""). (Yes = 1, No = 0)",,,,,
-dw_reason_trustworthy,"respondent selected as a reason for their primary drinking water source: trustworthiness. Note that trustworthiness and cleanliness had some overlap; trustworthiness was indicated by respondent's knowledge or surety that the water was clean based on more than just appearance. (Yes = 1, No = 0)",,,,,
-dw_reason_health,"respondent selected as a reason for their primary drinking water source: health, e.g.,""to avoid sickness"" or ""for better health."" (Yes = 1, No = 0)",,,,,
-dw_reason_other,"respondent selected as a reason for their primary drinking water source: other (Yes = 1, No = 0)",,,,,
-primary_water_source,"primary source of non-drinking water (selected options included: public tap/standpipe, piped water to respondent's home, piped water to respondent's compound, piped water to respondent's neighbor's home, borehole, natural source/spring water, delivered Kuffuor gallons via truck, packaged/sachet water)",,,,,
-secondary_water_source,"secondary source(s) of non-drinking water, if of a different type than the primary source. E.g., someone who uses two different commercial taps have ""na"" for a secondary water source",,,,,
-payment_mode,"payment method for households using tap water as primary or secondary source (applies to all households). Options include pre-paying for each gallon/bucket/container, or paying part or all of a monthly bill from the water utility, or both (this is possible because people often rely on more than one water source)",,,,,
-daily_hh_water_cost,"daily cost of non-drinking water for households paying to fetch water in Ghanaian Cedis (GHC). At time of writing, 1 USD is approximately 12.5 GHC",,,,,
-daily_hh_water_cost_phhm,"daily cost of non-drinking water per household member for households paying to fetch water in Ghanaian Cedis (GHC). At time of writing, 1 USD is approximately 12.5 GHC",,,,,
-storage,"storage capacity in liters, including both open and closed containers that typically store water for the household (not shared by others)",,,,,
-binary_struggle,"answer to the question: ""Have you ever struggled to find enough water?"" (Yes = 1, No = 0)",,,,,
-time_of_last_struggle,"binned question: when was the most recent time the respondent used a coping mechanism (see following answer choices)? Last 3 days, last 7 days, last 30 days, last year, over a year ago, over a year ago/cannot remember, or na: have never used one of these coping mechanisms",,,,,
-weekdays_struggle,"days in a week (n out of 7) the respondent typically struggles to find or pay for water. ""Struggle"" was defined as spending more time, money, or effort than usual on acquiring water",,,,,
-sachet_to_cook,"respondent selected as a coping mechanism for water shortages in the last thirty days: used sachet (packaged) water to cook (Yes = 1, No = 0)",,,,,
-skipped_cooking,"respondent selected as a coping mechanism for water shortages used in the last thirty days: skipped cooking due to lack of water (Yes = 1, No = 0)",,,,,
-sachet_to_bathe,"respondent selected as a coping mechanism for water shortages used in the last thirty days: used sachet (packaged) water to bathe (Yes = 1, No = 0)",,,,,
-skipped_bathing,"respondent selected as a coping mechanism for water shortages used in the last thirty days: skipped bathing due to lack of water (Yes = 1, No = 0)",,,,,
-closed_business,"respondent selected as a coping mechanism for water shortages used in the last thirty days: closed business due to lack of water (Yes = 1, No = 0)",,,,,
-skipped_laundry,"respondent selected as a coping mechanism for water shortages used in the last thirty days: skipped washing clothes/laundry due to lack of water (Yes = 1, No = 0)",,,,,
-,,,,,,
-,,,,,,
-,,,,,,
-,,,,,,
-,,,,,,
+﻿variable_name,description
+id,identification number
+draft_date,date and time of survey conception
+community,case study area (Abuja or Korle Gonno)
+housing_type,housing type options: block unit (unit in a single-story multi-unit cement block complex); wood unit (unit in a single-story multi-unit wooden complex); house (detached single-family dwelling with multiple rooms); compound house (multi-unit block complex with a shared courtyard); multistory apt (multi-story apartment building); wood shack (one-room wood structure); no structure (dwelling without 4 walls or roof); other
+gender,self-identified gender of respondent
+tenure,"renter, owner, or other living situation without payment"
+years_in_community,years respondent has lived in community (self-reported)
+adult_count,number of current household residents at least 18 years of age
+child_count,number of current household residents under 18 years of age
+rooms_in_hh,rooms in household that are used for sleeping
+primary_dw_source,"primary source of drinking water (packaged sachet or bottled water, piped water from compound, piped water from commercial tap, etc)"
+dw_reason_X,"reasons for using the respondent's primary drinking water source. Options: convenience, affordability, availability (whether vendors have it available for purchase), cold temperature, cleanliness (visibly high quality of water), taste, habit or cultural norm (these are different but respondents often described a gray area between habit (""I have done it all my life"") and cultural norm (""everyone does it"")), trustworthiness (respondent's knowledge that the water was clean based on more than just appearance), health (related to avoiding sickness), other. (Yes = 1, No = 0)"
+primary_water_source,"primary source of non-drinking water (selected options included: public tap/standpipe, piped water to respondent's home, piped water to respondent's compound, piped water to respondent's neighbor's home, borehole, natural source/spring water, delivered Kuffuor gallons via truck, packaged/sachet water)"
+secondary_water_source,"secondary source(s) of non-drinking water, if of a different type than the primary source. E.g., someone who uses two different commercial taps have ""na"" for a secondary water source"
+payment_mode,"payment method for households using tap water as primary or secondary source (applies to all households). Options include pre-paying for each gallon/bucket/container, or paying part or all of a monthly bill from the water utility, or both (this is possible because people often rely on more than one water source)"
+daily_hh_water_cost,"daily cost of non-drinking water for households paying to fetch water in Ghanaian Cedis (GHC). At time of writing, 1 USD is approximately 12.5 GHC"
+daily_hh_water_cost_phhm,"daily cost of non-drinking water per household member for households paying to fetch water in Ghanaian Cedis (GHC). At time of writing, 1 USD is approximately 12.5 GHC"
+storage,"storage capacity in liters, including both open and closed containers that typically store water for the household (not shared by others)"
+binary_struggle,"answer to the question: ""Have you ever struggled to find enough water?"" (Yes = 1, No = 0)"
+time_of_last_struggle,"binned question: when was the most recent time the respondent used a coping mechanism (see following answer choices)? Last 3 days, last 7 days, last 30 days, last year, over a year ago, over a year ago/cannot remember, or na: have never used one of these coping mechanisms"
+weekdays_struggle,"days in a week (n out of 7) the respondent typically struggles to find or pay for water. ""Struggle"" was defined as spending more time, money, or effort than usual on acquiring water"
+coping_X,"coping mechanisms for water shortages respondent practiced in the last thirty days. Options: used sachet (packaged) water to cook, skipped cooking, used sachet water to bathe, skipped bathing, closed business, skipped washing clothes (Yes = 1, No = 0)"
