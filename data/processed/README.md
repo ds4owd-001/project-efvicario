@@ -41,8 +41,9 @@ editor_options:
 
 ## Sharing / access information
 
-1.  Licenses/restrictions placed on the data:\
-    This work is licensed under the Creative Commons Attribution 4.0
+1.  Licenses/restrictions placed on the
+    [[data:\\\\](data:){.uri}](%5Bdata:\%5D(data:)%7B.uri%7D){.uri} This
+    work is licensed under the Creative Commons Attribution 4.0
     International license (CC-BY-4.0).
 
 2.  Links to publications that cite or use the data: None
