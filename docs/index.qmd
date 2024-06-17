@@ -27,9 +27,49 @@ In Accra, Ghana, those without household taps often rely on local water vendors,
 
 # Methods
 
-A survey of 116 households was conducted in two low-income communities in metropolitan Accra. These are Korle Gonno, a larger, well-planned coastal area with over 35 household water vendors, and Abuja, a small, densely packed, extralegal settlement with 15 water vendor and bathhouse businesses. Households were identified using geographically stratified random sampling; Korle Gonno was split into four quadrants and Abuja was bisected using major roads for demarcation. Respondents were household members who claimed to be knowledgeable about household water collection practices. "Household" in this survey was defined as a group of people who live in the same housing unit and usually have meals together, or "eat from the same pot." Information about primary drinking water sources and reasoning was collected as well, but is not analyzed here.
+A survey of 116 households was conducted in two low-income communities in metropolitan Accra. These are Korle Gonno, a larger, well-planned coastal area with over 35 household water vendors, and Abuja, a small, densely packed, extralegal settlement with 15 water vendor and bathhouse businesses. Households were identified using geographically stratified random sampling; Korle Gonno was split into four quadrants and Abuja was bisected using major roads for demarcation. Respondents were household members who claimed to be knowledgeable about household water collection practices. "Household" in this survey was defined as a group of people who live in the same housing unit and usually have meals together, or "eat from the same pot."
 
-Install packages:
+Information analyzed here includes:
+
+-   years living in community (respondent)
+
+-   household size
+
+-   rooms in household
+
+-   primary non-drinking water source
+
+-   other non-drinking water source(s)
+
+-   payment method for using commercial tap
+
+-   daily water expenditure for pay-to-fetch households
+
+-   coping mechanisms for water shortage used in the past 30 days
+
+Additional information collected but not analyzed here includes:
+
+-   ownership and type of business, business water source if applicable
+
+-   primary and secondary drinking water sources
+
+-   reasons for using drinking water sources
+
+-   type of packaged drinking water typically purchased (multipack or single package of water) and reason(s) for package size preference
+
+-   treatment of drinking water
+
+-   reason(s) for preference of primary non-drinking water source
+
+-   reason(s) for using other non-drinking water source(s)
+
+-   time of last struggle to access water, typical weekly frequency of struggle, reason for struggle (e.g., cost or availability)
+
+-   knowledge about tap closures
+
+-   water storage capacity and current stored water quantity
+
+Install packages.
 
 ```{r,eval=FALSE}
 install.packages("tidyverse")
@@ -41,10 +81,9 @@ install.packages("knitr")
 install.packages("kableExtra")
 ```
 
-Load packages:
+Load packages.
 
 ```{r}
-#Load packages and data
 library(tidyverse)
 library(dplyr)
 library(readxl)
@@ -54,10 +93,9 @@ library(knitr)
 library(kableExtra)
 ```
 
-Read data from Excel format:
+Read data from Excel format.
 
 ```{r}
-#Read data
 data <- read_excel(here::here("data/raw/hh-data.xlsx"))
 ```
 
@@ -65,7 +103,7 @@ Data processing involved:
 
 1\) adding columns to the data to calculate total household population and household density
 
-2\) setting NA values to be omitted during analysis
+2\) setting N/A values to be omitted during analysis
 
 3\) setting value types
 
@@ -117,10 +155,10 @@ long_struggle_data$community <- factor(long_struggle_data$community,
                                        levels = c("kg", "abuja"))
 ```
 
-Additionally, label vectors were created for ordinal variables to be used in plots:
+Additionally, label vectors were created for ordinal variables to be used in plots.
 
 ```{r}
-coping_mech_labs <- c( "coping_closed_business" = "Closed business",
+coping_mech_labs <- c("coping_closed_business" = "Closed business",
                        "coping_sachet_to_bathe" = "Used sachet water\n for bathing",
                        "coping_sachet_to_cook" = "Used sachet water\nfor cooking",
                        "coping_skipped_bathing" = "Skipped bathing",
@@ -159,7 +197,7 @@ Households in Korle Gonno were well-established compared to the somewhat transie
 See @tbl-summary for information about respondents' primary water sources, typical daily water cost per household member, and how they pay for water from their primary water source (either by pre-paying for each bucket, or by sharing a monthly bill with other households).
 
 ```{r}
-#| tbl-cap: Summary of findings
+#| tbl-cap: Summary of water sources and payment methods
 #| label: tbl-summary
 
 summary_data <- processed_data %>% 
@@ -189,7 +227,7 @@ The median daily cost for Abuja residents is about 4 cedis per person (approxima
 Most (74%) of the surveyed households reported that they pre-pay for each bucket or gallon of water they collect from their primary source, instead of fully paying or contributing to a monthly bill. For these households, prices are left up to informal vendors, and are generally much higher than the utility's price. Even among pre-paying households, Abuja residents pay higher prices overall, even though their daily usage is comparable to Korle Gonno residents (see @fig-daily-expenses).
 
 ```{r}
-#| fig-cap: Daily water expense per household member, for households that pre-pay (n=90)
+#| fig-cap: Daily water expense per household member for households that pre-pay (n=90)
 #| label: fig-daily-expenses
 
 processed_data |> 
@@ -244,7 +282,7 @@ long_struggle_data %>%
   geom_bar(position = position_dodge(.7), width = 0.6) 
 ```
 
-Skipping laundry was the most common way to cope with water shortages. Six respondents had closed their business in the last 30 days due to water shortage. Frequencies were about even between the two communities, but residents of Korle Gonno had used fewer coping strategies overall.
+Skipping laundry was the most common way to cope with water shortages, especially for residents of Abuja. Six respondents had closed their business in the last 30 days due to water shortage. Frequencies were about even between the two communities, but residents of Korle Gonno had used fewer coping strategies overall.
 
 # Conclusions
 
